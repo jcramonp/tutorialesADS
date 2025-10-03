@@ -1,0 +1,7 @@
+{% extends 'pages/base.html' %}
+{% block title %}Product created{% endblock %}
+{% block header_title %}Product created{% endblock %}
+{% block content %}
+  <div class="alert alert-success">Product created</div>
+  <a class="btn btn-primary" href="{% url 'index' %}">Back to products</a>
+{% endblock %}

@@ -77,81 +77,57 @@ class ProductIndexView(View):
         return render(request, self.template_name, viewData)
         # Renders the 'products/index.html' template with the provided viewData dictionary.
 class ProductShowView(View):
-    # This is a Django class-based view for showing details of a single product.
-    # It also inherits from the generic View class.
-
     template_name = 'products/show.html'
-    # Specifies the HTML template that should be used to render the product detail page.
 
     def get(self, request, id):
-        # Handles GET requests for a single product detail page.
-        # The 'id' parameter comes from the URL.
-
-        viewData = {}
-        # Creates a dictionary to hold variables for the template.
-
-        # Validates that the id is in the numbers range
+        # valida id numérico positivo
         try:
             product_id = int(id)
             if product_id < 1:
-                raise ValueError("Product ID must be 1 or greater.")
-            product = get_object_or_404(Product, pk=product_id)
-        except (ValueError, IndexError):
+                raise ValueError
+        except ValueError:
             return HttpResponseRedirect(reverse('home'))
 
         product = get_object_or_404(Product, pk=product_id)
 
-        viewData["title"] = product.name + " - Online Store"
-        # Sets the page title to the product name plus " - Online Store".
-
-        viewData["subtitle"] = product.name + " - Product information"
-        # Sets the subtitle to indicate product information.
-
-        viewData["product"] = product
-        # Passes the selected product's data to the template.
-
+        viewData = {
+            "title": f"{product.name} - Online Store",
+            "subtitle": f"{product.name} - Product information",
+            "product": product,
+            "comments": product.comment_set.all(),  # <-- clave
+        }
         return render(request, self.template_name, viewData)
-        # Renders the 'products/show.html' template with the product's data.
 
 # Form to create a new product
-class ProductForm(forms.Form):
+class ProductForm(forms.ModelForm):
+    name = forms.CharField(required=True)
+    price = forms.FloatField(required=True)
+
     class Meta:
         model = Product
         fields = ['name', 'price']
 
     def clean_price(self):
-        price = self.cleaned_data.get['price']
-        if price is None or price <= 0:
-            raise ValidationError("Price must be greater than zero.")
+        price = self.cleaned_data.get('price')
+        if price is not None and price <= 0:
+            raise ValidationError('Price must be greater than zero.')
         return price
 
-# Vista para crear un producto
 class ProductCreateView(View):
-    # Nombre del template que renderizará la vista
     template_name = 'products/create.html'
 
-    # Método GET: se ejecuta cuando se accede a la página por primera vez
     def get(self, request):
-        form = ProductForm()  # Crea una instancia vacía del formulario
-        viewData = {}
-        viewData["title"] = "Create product"  # Título de la página
-        viewData["form"] = form  # Pasa el formulario al contexto
-        return render(request, self.template_name, viewData)  # Renderiza el template con los datos
+        form = ProductForm()
+        viewData = {"title": "Create product", "form": form}
+        return render(request, self.template_name, viewData)
 
-    # Método POST: se ejecuta cuando se envía el formulario
     def post(self, request):
         form = ProductForm(request.POST)
         if form.is_valid():
             form.save()
-            return render(request, self.template_success, {
-                "title": "Product created",
-                "message": "Product created", })
-
-        else:
-            viewData = {}
-            viewData["title"] = "Create product"
-            viewData["form"] = form
-            return render(request, self.template_name, viewData)
+            return redirect('product-created')  # <- como indica el PDF 04
+        viewData = {"title": "Create product", "form": form}
+        return render(request, self.template_name, viewData)
 
 class ProductListView(ListView):
     # This is a Django class-based view for listing products.
