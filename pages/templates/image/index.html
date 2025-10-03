@@ -1,27 +1,32 @@
 {% extends 'pages/base.html' %}
 
-{% block title %} Image Storage - DI {% endblock %}
+{% block title %}Upload image{% endblock %}
+{% block header_title %}Upload image (con DI){% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">Upload image</div>
-                <div class="card-body">
-                    <form action="{% url 'image_save' %}" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label>Image:</label>
-                            <input type="file" name="profile_image" />
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
-
-                    <img src="{{ image_url }}" />
-                </div>
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">Upload image</div>
+        <div class="card-body">
+          <form method="POST" enctype="multipart/form-data" action="{% url 'image_save' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label">Image:</label>
+              <input type="file" name="profile_image" class="form-control" accept="image/*">
             </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+
+          {% if image_url %}
+            <hr>
+            <p class="mb-2">Imagen subida:</p>
+            <img src="{{ image_url }}" class="img-fluid" alt="uploaded image">
+          {% endif %}
         </div>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}

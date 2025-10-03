@@ -7,6 +7,7 @@ from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ValidationError
 from .models import Product
+from .utils import ImageLocalStorage
 
 class HomePageView(TemplateView):
     template_name = 'pages/home.html'
@@ -190,13 +191,12 @@ def ImageViewFactory(image_storage):
         template_name = 'image/index.html'
 
         def get(self, request):
-            image_url = request.session.get('image_url', '')
-            return render(request, self.template_name, {'image_url': image_url})
+            return render(request, self.template_name, {"image_url": ""})
 
         def post(self, request):
             image_url = image_storage.store(request)
-            request.session['image_url'] = image_url
-            return redirect('image_index')
+            context = {"image_url": image_url}
+            return render(request, self.template_name, context)
 
     return ImageView
 
